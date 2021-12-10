@@ -7,6 +7,7 @@
 #include "func.h"
 #include "generalfunc.h"
 #include "communication.h"
+#include "definition.h"
 
 int main(int argc, char *argv[])
 {
@@ -22,8 +23,8 @@ int main(int argc, char *argv[])
 	//if no max and no
 	if ((ifContainFunction(argv, argc)) == -1)
 	{
-		printf("%s", "Error, No function enter");
-		return 0;
+		printf("Error, No function enter\n");
+		exit(EXIT_FAILURE);
 	}
 
 	char *name = getNameFile(argv, argc);
@@ -37,30 +38,34 @@ int main(int argc, char *argv[])
 		arr = readArrFromUser(&letter, &lenth);
 	}
 
-	///////////////////children//////////////////////
+	///////////////////childrens//////////////////////
 
 	lenForChild1 = lenth / 2;
 	lenForChild2 = lenth - (lenth / 2);
 
-	pipe(fd1);
-	pipe(fd2);
+	if (pipe(fd1) == -1)
+	{
+		exit(EXIT_FAILURE);
+	}
+	if (pipe(fd2) == -1)
+	{
+		exit(EXIT_FAILURE);
+	}
 
-	int pid1 = fork();
+	pid_t pid1 = fork();
 	if (pid1 < 0)
 	{
-		return 2;
+		exit(EXIT_FAILURE);
 	}
 	if (pid1 == 0)
 	{
 		close(fd2[0]);
 		close(fd2[1]);
-		if ((responseFromChild(fd1, lenForChild1, argv, argc) == -1))
-		{
-			return 0;
-		}
+		responseFromChild(fd1, lenForChild1, argv, argc);
+		exit(EXIT_SUCCESS);
 	}
 
-	int pid2 = fork();
+	pid_t pid2 = fork();
 	if (pid2 < 0)
 	{
 		return 5;
@@ -70,10 +75,8 @@ int main(int argc, char *argv[])
 	{
 		close(fd1[0]);
 		close(fd1[1]);
-		if ((responseFromChild(fd2, lenForChild2, argv, argc) == -1))
-		{
-			return 0;
-		}
+		responseFromChild(fd2, lenForChild2, argv, argc);
+		exit(EXIT_SUCCESS);
 	}
 
 	///////////////////parents///////////////////////
@@ -86,12 +89,12 @@ int main(int argc, char *argv[])
 
 	if (write(fd1[1], subArr1, sizeof(int) * lenForChild1) < 0)
 	{
-		return 0;
+		exit(EXIT_FAILURE);
 	}
 
 	if (write(fd2[1], subArr2, sizeof(int) * lenForChild2) < 0)
 	{
-		return 0;
+		exit(EXIT_FAILURE);
 	}
 
 	waitpid(pid1, NULL, 0);
@@ -104,18 +107,22 @@ int main(int argc, char *argv[])
 
 	if (read(fd1[0], &strctFromChild1, sizeof(MaxAndAvg)) < 0)
 	{
-		return 9;
+		exit(EXIT_FAILURE);
 	}
 
 	if (read(fd2[0], &strctFromChild2, sizeof(MaxAndAvg)) < 0)
 	{
-		return 9;
+		exit(EXIT_FAILURE);
 	}
 
 	close(fd1[0]);
 	close(fd2[0]);
 
-	finalRisult(argv, argc, strctFromChild1, strctFromChild2);
+	finalRisult(argv, argc, strctFromChild1, strctFromChild2, lenForChild1, lenForChild2, lenth);
+
+	free(arr);
+	free(subArr1);
+	free(subArr2);
 
 	return 0;
 }

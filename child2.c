@@ -6,13 +6,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include "definition.h"
+#include "communication.h"
 #include "func.h"
 
 int main(int argc, char *argv[])
 {
 
     MaxAndAvg maxAndAvg;
+    char *massege = argv[2];
     int lengthSub = atoi(argv[1]);
 
     int subArr[lengthSub];
@@ -21,27 +23,15 @@ int main(int argc, char *argv[])
 
     if (read(STDIN_FILENO, subArr, sizeof(int) * lengthSub) < 0)
     {
-        return 9;
+        exit(EXIT_FAILURE);
     }
 
-    if (strcmp(argv[2], "MAX-AVG") == 0)
-    {
-        maxAndAvg.avg = getAvg(subArr, lengthSub);
-        maxAndAvg.max = getMax(subArr, lengthSub);
-    }
-    else if (strcmp(argv[2], "MAX") == 0)
-    {
-        maxAndAvg.max = getMax(subArr, lengthSub);
-    }
-    else if (strcmp(argv[2], "AVG") == 0)
-    {
-        maxAndAvg.avg = getAvg(subArr, lengthSub);
-    }
+    checkMessageFromParent(massege, subArr, lengthSub, &maxAndAvg);
 
     if (write(STDOUT_FILENO, &maxAndAvg, sizeof(MaxAndAvg)) < 0)
     {
-        return 9;
+        exit(EXIT_FAILURE);
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }

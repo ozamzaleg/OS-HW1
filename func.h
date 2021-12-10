@@ -1,20 +1,10 @@
+#include "definition.h"
+
 #ifndef FUNC_H_
 #define FUNC_H_
 
-#define MAX "-max"
-#define AVG "-avg"
-#define TEXT ".txt"
-
-typedef struct
-{
-
-	int max;
-	float avg;
-
-} MaxAndAvg;
-
-void finalRisult(char *argv[], int argc, MaxAndAvg first, MaxAndAvg second);
-float getAvgParent(float fromChild1, float fromChild2);
+void finalRisult(char *argv[], int argc, MaxAndAvg first, MaxAndAvg second, int lenForChild1, int lenForChild2, int lenth);
+float getAvgParent(float fromChild1, float fromChild2, int lenForChild1, int lenForChild2, int lenth);
 int getMaxParent(int fromChild1, int fromChild2);
 int ifExisAvgMax(char *argv[], int argc, int *subArr, int lengthSub, MaxAndAvg *maxAndAvg);
 int *createSubArr(int *arr, int lenNewSub);

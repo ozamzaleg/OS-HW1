@@ -2,42 +2,40 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "func.h"
 
-void finalRisult(char *argv[], int argc, MaxAndAvg first, MaxAndAvg second)
+#include "func.h"
+#include "definition.h"
+
+void finalRisult(char *argv[], int argc, MaxAndAvg first, MaxAndAvg second, int lenForChild1, int lenForChild2, int lenth)
 {
 
 	if (ifContainFunction(argv, argc) == 3)
 	{
-		float avg = getAvgParent(first.avg, second.avg);
+		float avg = getAvgParent(first.avg, second.avg, lenForChild1, lenForChild2, lenth);
 		int max = getMaxParent(first.max, second.max);
 		printf("The avg is: %.3f\n", avg);
 		printf("The max is: %d", max);
-		return;
 	}
 	else if (ifContainFunction(argv, argc) == 1)
 	{
-		float avg = getAvgParent(first.avg, second.avg);
+		float avg = getAvgParent(first.avg, second.avg, lenForChild1, lenForChild2, lenth);
 		printf("The avg is: %.3f", avg);
-		return;
 	}
 	else if (ifContainFunction(argv, argc) == 2)
 	{
 		int max = getMaxParent(first.max, second.max);
 		printf("The max is: %d", max);
-		return;
 	}
 	else
 	{
 		printf("%s", "You did not choose avg or max");
-		return;
 	}
 }
 
-float getAvgParent(float fromChild1, float fromChild2)
+float getAvgParent(float fromChild1, float fromChild2, int lenForChild1, int lenForChild2, int lenth)
 {
-	float sum = fromChild1 + fromChild2;
-	return sum / 2.0;
+	float sum = fromChild1 * lenForChild1 + fromChild2 * lenForChild2;
+	return sum / lenth;
 }
 
 int getMaxParent(int fromChild1, int fromChild2)
@@ -143,8 +141,8 @@ float getAvg(int *arr, int length)
 
 int getMax(int *arr, int length)
 {
-	int max = 0;
-	for (int i = 0; i < length; i++)
+	int max = arr[0];
+	for (int i = 1; i < length; i++)
 	{
 		if (arr[i] > max)
 		{

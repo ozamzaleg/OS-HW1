@@ -12,26 +12,27 @@ int *readArrFromFile(char *fileName, char *letter, int *len)
 	if (!file)
 	{
 		printf("%s", "cant open the file");
+		exit(EXIT_FAILURE);
 	}
 
 	if (fscanf(file, "%c%d", letter, len) != 2)
 	{
 		ferror(file);
-		return NULL;
+		exit(EXIT_FAILURE);
 	}
 
 	arr = (int *)malloc(sizeof(int) * (*len));
 	if (!arr)
 	{
 		printf("%s", "allocate not succss");
-		return NULL;
+		exit(EXIT_FAILURE);
 	}
 	for (int i = 0; i < (*len); i++)
 	{
 		if (fscanf(file, "%d", &arr[i]) != 1)
 		{
 			ferror(file);
-			return NULL;
+			exit(EXIT_FAILURE);
 		}
 	}
 	return arr;
@@ -48,7 +49,7 @@ int *readArrFromUser(char *letter, int *len)
 	if (!arr)
 	{
 		printf("%s", "allocate not succss");
-		return NULL;
+		exit(EXIT_FAILURE);
 	}
 	printf("%s", "");
 

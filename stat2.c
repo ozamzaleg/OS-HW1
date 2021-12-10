@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <string.h>
+
 #include "generalfunc.h"
 #include "func.h"
+#include "definition.h"
 
-/* Version A: passing child args through execve */
 int main(int argc, char *argv[])
 {
 	pid_t pid1;
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
 	if ((ifContainFunction(argv, argc)) == -1)
 	{
 		printf("%s", "Error, No function enter");
-		return 0;
+		exit(EXIT_FAILURE);
 	}
 
 	char *name = getNameFile(argv, argc);
@@ -62,19 +63,18 @@ int main(int argc, char *argv[])
 	char *stringFunc[] = {NULL};
 	char *lenSubArr[] = {NULL};
 
-	//chack what function in the stdin
 	int inputFunction = ifContainFunction(argv, argc);
 
 	switch (inputFunction)
 	{
 	case 3:
-		stringFunc[0] = "MAX-AVG";
+		stringFunc[0] = MAX_AVG;
 		break;
 	case 2:
-		stringFunc[0] = "MAX";
+		stringFunc[0] = MAX;
 		break;
 	case 1:
-		stringFunc[0] = "AVG";
+		stringFunc[0] = AVG;
 		break;
 	}
 
@@ -87,14 +87,15 @@ int main(int argc, char *argv[])
 
 	if (pipe(fd1) == -1)
 	{
-		printf("in\n");
-
-		return 1;
+		exit(EXIT_FAILURE);
 	}
 	pid1 = fork();
 
 	if (pid1 == -1)
-		printf("fork error");
+	{
+		exit(EXIT_FAILURE);
+	}
+
 	else if (pid1 == 0)
 	{
 
@@ -106,7 +107,7 @@ int main(int argc, char *argv[])
 
 		if (write(STDOUT_FILENO, subArr1, sizeof(int) * lenForChild1) < 0)
 		{
-			return 9;
+			exit(EXIT_FAILURE);
 		}
 
 		execv(dir, parmList);
@@ -120,14 +121,15 @@ int main(int argc, char *argv[])
 
 	if (pipe(fd2) == -1)
 	{
-		printf("in\n");
-
-		return 1;
+		exit(EXIT_FAILURE);
 	}
 	pid2 = fork();
 
 	if (pid2 == -1)
-		printf("fork error");
+	{
+		exit(EXIT_FAILURE);
+	}
+
 	else if (pid2 == 0)
 	{
 
@@ -139,7 +141,7 @@ int main(int argc, char *argv[])
 
 		if (write(STDOUT_FILENO, subArr2, sizeof(int) * lenForChild2) < 0)
 		{
-			return 9;
+			exit(EXIT_FAILURE);
 		}
 
 		execv(dir, parmList);
@@ -152,22 +154,27 @@ int main(int argc, char *argv[])
 
 	if (read(fd1[0], &maxAndAvg1, sizeof(MaxAndAvg)) < 0)
 	{
-		return 9;
+		exit(EXIT_FAILURE);
 	}
 
 	waitpid(pid2, NULL, 0);
 
 	if (read(fd2[0], &maxAndAvg2, sizeof(MaxAndAvg)) < 0)
 	{
-		return 9;
+		exit(EXIT_FAILURE);
 	}
 
-	finalRisult(argv, argc, maxAndAvg1, maxAndAvg2);
+	finalRisult(argv, argc, maxAndAvg1, maxAndAvg2,lenForChild1,lenForChild2,lenth);
+
 
 	close(fd1[0]);
 	close(fd1[1]);
 	close(fd2[0]);
 	close(fd2[1]);
+
+	free(arr);
+	free(subArr1);
+	free(subArr2);
 
 	return 0;
 }
