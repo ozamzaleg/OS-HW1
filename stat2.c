@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 					exit(EXIT_FAILURE);
 				}
 			}
-			break;
+			exit(EXIT_SUCCESS);
 		}
 	}
 
