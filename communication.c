@@ -16,7 +16,6 @@ void responseFromChild(int *fd, int lenthArrChild, char *argv[], int argc)
 	{
 		exit(EXIT_FAILURE);
 	}
-	close(fd[0]);
 	if ((ifExisAvgMax(argv, argc, arrChild, lenthArrChild, &child)) == -1)
 	{
 		exit(EXIT_FAILURE);
@@ -25,7 +24,6 @@ void responseFromChild(int *fd, int lenthArrChild, char *argv[], int argc)
 	{
 		exit(EXIT_FAILURE);
 	}
-	close(fd[1]);
 }
 
 void checkMessageFromParent(char *message, int *subArr, int lengthSub, MaxAndAvg *maxAndAvg)

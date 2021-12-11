@@ -6,6 +6,10 @@
 #define AVG "-avg"
 #define TEXT ".txt"
 
+#define PROCESS_NUM 2
+#define MAX_DIR_LEN 100
+#define MAX_STRING_LEN 50
+
 typedef struct
 {
 

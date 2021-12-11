@@ -15,15 +15,14 @@ int main(int argc, char *argv[])
 	int *arr;
 	char letter = ' ';
 	int lenth = 0;
-	int lenForChild1;
-	int lenForChild2;
-	int fd1[2];
-	int fd2[2];
+	int lenForChild[PROCESS_NUM];
+	int pids[PROCESS_NUM];
+	int pipes[PROCESS_NUM][2];
 
 	//if no max and no
 	if ((ifContainFunction(argv, argc)) == -1)
 	{
-		printf("Error, No function enter\n");
+		fprintf(stderr, "Error, No function enter\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -38,45 +37,46 @@ int main(int argc, char *argv[])
 		arr = readArrFromUser(&letter, &lenth);
 	}
 
+	lenForChild[0] = lenth / 2;
+	lenForChild[1] = lenth - (lenth / 2);
+
 	///////////////////childrens//////////////////////
 
-	lenForChild1 = lenth / 2;
-	lenForChild2 = lenth - (lenth / 2);
-
-	if (pipe(fd1) == -1)
+	for (int i = 0; i < PROCESS_NUM; i++)
 	{
-		exit(EXIT_FAILURE);
-	}
-	if (pipe(fd2) == -1)
-	{
-		exit(EXIT_FAILURE);
+		if (pipe(pipes[i]) < 0)
+		{
+			fprintf(stderr, "creating pipe failed\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 
-	pid_t pid1 = fork();
-	if (pid1 < 0)
+	for (int i = 0; i < PROCESS_NUM; i++)
 	{
-		exit(EXIT_FAILURE);
-	}
-	if (pid1 == 0)
-	{
-		close(fd2[0]);
-		close(fd2[1]);
-		responseFromChild(fd1, lenForChild1, argv, argc);
-		exit(EXIT_SUCCESS);
-	}
+		pids[i] = fork();
+		if (pids[i] == -1)
+		{
+			fprintf(stderr, "creating fork failed\n");
+			exit(EXIT_FAILURE);
+		}
+		if (pids[i] == 0)
+		{
 
-	pid_t pid2 = fork();
-	if (pid2 < 0)
-	{
-		return 5;
-	}
+			for (int j = 0; j < PROCESS_NUM; j++)
+			{
+				if (i != j)
+				{
+					close(pipes[j][0]);
+					close(pipes[j][1]);
+				}
+				else
+				{
+					responseFromChild(pipes[i], lenForChild[i], argv, argc);
+				}
+			}
 
-	if (pid2 == 0)
-	{
-		close(fd1[0]);
-		close(fd1[1]);
-		responseFromChild(fd2, lenForChild2, argv, argc);
-		exit(EXIT_SUCCESS);
+			exit(EXIT_SUCCESS);
+		}
 	}
 
 	///////////////////parents///////////////////////
@@ -84,41 +84,41 @@ int main(int argc, char *argv[])
 	MaxAndAvg strctFromChild1;
 	MaxAndAvg strctFromChild2;
 
-	int *subArr1 = createSubArr(arr, lenForChild1);
-	int *subArr2 = createSubArr(arr + lenForChild1, lenForChild2);
+	int *subArr1 = createSubArr(arr, lenForChild[0]);
+	int *subArr2 = createSubArr(arr + lenForChild[0], lenForChild[1]);
 
-	if (write(fd1[1], subArr1, sizeof(int) * lenForChild1) < 0)
+	if (write(pipes[0][1], subArr1, sizeof(int) * lenForChild[0]) < 0)
 	{
 		exit(EXIT_FAILURE);
 	}
 
-	if (write(fd2[1], subArr2, sizeof(int) * lenForChild2) < 0)
+	if (write(pipes[1][1], subArr2, sizeof(int) * lenForChild[1]) < 0)
 	{
 		exit(EXIT_FAILURE);
 	}
 
-	waitpid(pid1, NULL, 0);
-	waitpid(pid2, NULL, 0);
+	waitpid(pids[0], NULL, 0);
+	waitpid(pids[1], NULL, 0);
 
-	close(fd1[1]);
-	close(fd2[1]);
+	close(pipes[0][1]);
+	close(pipes[1][1]);
 
 	// read arr from childs////
 
-	if (read(fd1[0], &strctFromChild1, sizeof(MaxAndAvg)) < 0)
+	if (read(pipes[0][0], &strctFromChild1, sizeof(MaxAndAvg)) < 0)
 	{
 		exit(EXIT_FAILURE);
 	}
 
-	if (read(fd2[0], &strctFromChild2, sizeof(MaxAndAvg)) < 0)
+	if (read(pipes[1][0], &strctFromChild2, sizeof(MaxAndAvg)) < 0)
 	{
 		exit(EXIT_FAILURE);
 	}
 
-	close(fd1[0]);
-	close(fd2[0]);
+	close(pipes[0][0]);
+	close(pipes[1][0]);
 
-	finalRisult(argv, argc, strctFromChild1, strctFromChild2, lenForChild1, lenForChild2, lenth);
+	finalRisult(argv, argc, strctFromChild1, strctFromChild2, lenForChild[0], lenForChild[1], lenth);
 
 	free(arr);
 	free(subArr1);
