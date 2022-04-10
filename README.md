@@ -1,3 +1,3 @@
-Oz Amzaleg - 313554958 
+**Name**: Oz Amzaleg **ID**: 313554958
 
-Nadav Levi 312594484
+**Name**: Nadav Levi **ID**: 312594484
